@@ -1,4 +1,4 @@
-<library path="lib/libturtlebot_follower">
+<library path="lib/libhw5turtlebot_follower">
   <class name="hw5turtlebot_follower/hw5TurtlebotFollower" type="hw5turtlebot_follower::hw5TurtlebotFollower" base_class_type="nodelet::Nodelet">
     <description>
       The turtlebot people follower node.
