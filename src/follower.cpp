@@ -197,12 +197,16 @@ private:
         ROS_INFO_THROTTLE(1, "Centroid too far away %f, stopping the robot", z);
         if (enabled_)
         {
-          cmdpub_.publish(geometry_msgs::TwistPtr(new geometry_msgs::Twist()));
+          //cmdpub_.publish(geometry_msgs::TwistPtr(new geometry_msgs::Twist()));
+          geometry_msgs::TwistPtr cmd(new geometry_msgs::Twist());
+          cmd->linear.x = 0.0;
+          cmd->angular.z = 1.0;
+          cmdpub_.publish(cmd);
         }
         return;
       }
 
-      ROS_INFO_THROTTLE(1, "Centroid at %f %f %f with %d points", x, y, z, n);
+      ROS_INFO_THROTTLE(1, "Centroid at %f %f %f with %d points, the goal z is %f", x, y, z, n, goal_z_);
       publishMarker(x, y, z);
 
       if (enabled_)
@@ -220,7 +224,11 @@ private:
 
       if (enabled_)
       {
-        cmdpub_.publish(geometry_msgs::TwistPtr(new geometry_msgs::Twist()));
+        //cmdpub_.publish(geometry_msgs::TwistPtr(new geometry_msgs::Twist()));
+        geometry_msgs::TwistPtr cmd(new geometry_msgs::Twist());
+        cmd->linear.x = 0.0;
+        cmd->angular.z = 1.0;
+        cmdpub_.publish(cmd);
       }
     }
 
