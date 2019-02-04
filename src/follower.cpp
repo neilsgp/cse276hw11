@@ -40,6 +40,8 @@
 
 #include <depth_image_proc/depth_traits.h>
 
+#include <cmvision/Blob.h>
+#include <cmvision/Blobs.h>
 
 namespace hw5turtlebot_follower
 {
@@ -87,6 +89,11 @@ private:
   // Dynamic reconfigure server
   dynamic_reconfigure::Server<turtlebot_follower::FollowerConfig>* config_srv_;
 
+  // TODO: Do something when blob
+  void blobsCallBack (const cmvision::Blobs& blobsIn) {
+    return;
+  }
+
   /*!
    * @brief OnInit method from node handle.
    * OnInit method from node handle. Sets up the parameters
@@ -111,6 +118,9 @@ private:
     markerpub_ = private_nh.advertise<visualization_msgs::Marker>("marker",1);
     bboxpub_ = private_nh.advertise<visualization_msgs::Marker>("bbox",1);
     sub_= nh.subscribe<sensor_msgs::Image>("depth/image_rect", 1, &hw5TurtlebotFollower::imagecb, this);
+
+    // TODO: check this subscribe to /blob 
+    blobsSubscriber = nh.subscribe("/blobs", 100, blobsCallBack); 
 
     switch_srv_ = private_nh.advertiseService("change_state", &hw5TurtlebotFollower::changeModeSrvCb, this);
 

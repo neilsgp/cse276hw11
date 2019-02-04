@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(hw5turtlebot_follower)
 
 ## Find catkin macros and libraries
-find_package(catkin REQUIRED COMPONENTS nodelet roscpp visualization_msgs turtlebot_msgs depth_image_proc dynamic_reconfigure)
+find_package(catkin REQUIRED COMPONENTS nodelet roscpp visualization_msgs turtlebot_msgs depth_image_proc dynamic_reconfigure pcl_conversions pcl_ros sensor_msgs std_msgs cmvision)
 find_package(Boost REQUIRED)
 
 generate_dynamic_reconfigure_options(cfg/Follower.cfg)
