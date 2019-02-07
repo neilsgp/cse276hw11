@@ -20,5 +20,5 @@ $ python color_tracker.py
 ```
 
 ## FSM Diagram
-<img src="https://puu.sh/CIJLt/3c1a84e1e1.png" alt="Kitten"
+<img src="https://puu.sh/CIJZx/71efe5d9a7.png" alt="Kitten"
 	title="A cute kitten" width="400" height="400" />
