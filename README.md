@@ -18,4 +18,4 @@ $ cd ~/catkin_ws/src/where_is_blob/src
 $ python color_tracker.py
 ```
 
-![Alt text](/images/FSM.jpeg?raw=true "FSM Diagram")
+![Alt text](https://puu.sh/CIJLt/3c1a84e1e1.png)
