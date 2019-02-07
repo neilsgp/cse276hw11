@@ -1,3 +1,4 @@
+## Compile and run code
 First run dependent services
 ```
 $ roscore
@@ -20,4 +21,4 @@ $ python color_tracker.py
 
 ## FSM Diagram
 <img src="https://puu.sh/CIJLt/3c1a84e1e1.png" alt="Kitten"
-	title="A cute kitten" width="150" height="100" />
+	title="A cute kitten" width="200" height="200" />
