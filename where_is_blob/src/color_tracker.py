@@ -29,6 +29,7 @@ from create_node.msg import TurtlebotSensorState
 turn = 0.0 # turning rate
 blob_position = 0 # x position for the blob
 forward = 0.0 # speed forward 
+backing_up = False
 
 # pcl vars
 min_x = -0.2
@@ -37,21 +38,23 @@ min_y = -0.3
 max_y = 0.5
 max_z = 1.2
 
+# called within a timer
+def timer_callback(event):
+  global backing_up 
+  backing_up = False
+  rospy.loginfo('STOP BACKING UP!!')
+
 # called to handle obstacles
 def handle_obstacle():
+  global turn
+  global forward
 
-  pub = rospy.Publisher('/mobile_base/commands/velocity', Twist)
-  twist = Twist()
-
-  # use turn to turn the robot slower/faster
-  twist.linear.x = -1; twist.linear.y = -1; twist.linear.z = -1
-  twist.angular.x = 0; twist.angular.y = 0; twist.angular.z = 0
-  pub.publish(twist)
-
-  # use turn to turn the robot slower/faster
-  twist.linear.x = 0; twist.linear.y = 0; twist.linear.z = 0
-  twist.angular.x = 0; twist.angular.y = 0; twist.angular.z = -1
-  pub.publish(twist)
+  # set back-up turn and speed values
+  turn = -1
+  forward = -0.1
+  
+  # let kobuki 
+  rospy.Timer(rospy.Duration(0.5), timer_callback, oneshot=True)  
 
 # cmvision callback
 # called when a blob is detected
@@ -60,6 +63,10 @@ def callback(data):
   global turn
   global forward
   global blob_position
+  global backing_up 
+
+  if backing_up:
+    return
 
   # if a blob is found...
   if len(data.blobs):
@@ -87,7 +94,7 @@ def callback(data):
     if blob_position > 200 and blob_position < 450:
       turn = 0
       forward = 0.1
-  
+
   # no blob found...
   else:
     rospy.loginfo('Looking for blob... spinning')
@@ -102,6 +109,7 @@ def pcl_callback(data):
   global min_y
   global max_y
   global max_z
+  global backing_up 
 
   # init values
   x = y = z = n  = 0
@@ -120,7 +128,7 @@ def pcl_callback(data):
       n += 1
     
   # calculate centroid
-  if n:
+  if n > 4000:
     x /= n
     y /= n
     z /= n
@@ -128,7 +136,8 @@ def pcl_callback(data):
     rospy.loginfo('Centroid (n = %d) at (%.2f, %.2f, %.2f)' % (n, x, y, z))
 
     # too close!! avoid obstacle fast!!
-    if z < 0.6:
+    if z < 0.6 or backing_up:
+      backing_up = True
       handle_obstacle()    
   
   # not enough points detected
