@@ -35,8 +35,8 @@ it moves to evade it and look for the blob continuously. Once it reaches
 the goal it stops.
 
 ## Testing 
-We conducted several experiments to test the performance of our robot. We will briefly explain the most important experiments below. For the first part, we just tested the robot while there is no obstacle in the way and someone is holding the goal (“Move to goal demo”) and the goal is attached to the cabinet (“Move to goal demo 2”). 
-For the second part in which the robot should avoid the obstacle and then try to find the goal again and move towards the goal, we did 2 experiments. In “obstacle_human_demo” video, a human’s feet is considered as an obstacle. In this case, the robot can see some parts of the goal from between human legs. In “obstacle_box_demo” video, the robot can’t see any part of the goal at first, so it tries to move and search for the goal.
+We conducted several experiments to test the performance of our robot. We will briefly explain the most important experiments below. For the first part, we just tested the robot while there is no obstacle in the way and someone is holding the goal `move_to_goal_demo` and the goal is attached to the cabinet `move_to_goal_demo2`. 
+For the second part in which the robot should avoid the obstacle and then try to find the goal again and move towards the goal, we did 2 experiments. In `obstacle_human_demo` video, a human’s feet is considered as an obstacle. In this case, the robot can see some parts of the goal from between human legs. In `obstacle_box_demo` video, the robot can’t see any part of the goal at first, so it tries to move and search for the goal.
 
 ## Videos
 The videos are [here](https://drive.google.com/drive/u/0/folders/1-3IwQXM2ItUJVxufwHA_2_u3-H-KgRv0)
