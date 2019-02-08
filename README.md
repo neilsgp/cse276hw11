@@ -39,4 +39,4 @@ We conducted several experiments to test the performance of our robot. We will b
 For the second part in which the robot should avoid the obstacle and then try to find the goal again and move towards the goal, we did 2 experiments. In “obstacle_human_demo” video, a human’s feet is considered as an obstacle. In this case, the robot can see some parts of the goal from between human legs. In “obstacle_box_demo” video, the robot can’t see any part of the goal at first, so it tries to move and search for the goal.
 
 ## Videos
-The videos are [here] (https://drive.google.com/drive/u/0/folders/1-3IwQXM2ItUJVxufwHA_2_u3-H-KgRv0).
+The videos are [here](https://drive.google.com/drive/u/0/folders/1-3IwQXM2ItUJVxufwHA_2_u3-H-KgRv0)
