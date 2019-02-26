@@ -1,24 +1,8 @@
-# CSE 276B - HW 6
-# Authors: Neil Sengupta, Hadi Givehchian, Gustavo Umbelino
-# References:
-# # Python color-tracking: http://www.transistor.io/color-blob-tracking-with-ros.html
-
-# $ roscore
-# $ roslaunch turtlebot_bringup minimal.launch
-# $ roslaunch astra_launch astra_pro.launch
-
-# Calibrate color in ~/colors.txt
-# $ roscd cmvision
-# $ roslaunch cmvision cmvision.launch image:=/camera/rgb/image_raw
-# << CTRL+C to kill process >>
-# $ rosparam set /cmvision/color_file /home/turtlebot/colors.txt
-# $ rosrun cmvision cmvision image:=/camera/rgb/image_raw
-
-# $ cd ~/catkin_ws/src/where_is_blob/src
-# $ python color_tracker.py
-
-import roslib
+#!/usr/bin/env python
 import rospy
+from geometry_msgs.msg import Twist
+from math import radians
+import os
 from sensor_msgs.msg import PointCloud2
 from sensor_msgs import point_cloud2
 from geometry_msgs.msg import Twist
@@ -30,6 +14,8 @@ turn = 0.0 # turning rate
 blob_position = 0 # x position for the blob
 forward = 0.0 # speed forward 
 backing_up = False
+going_straight = False
+found_goal = False
 
 # pcl vars
 min_x = -0.2
@@ -64,8 +50,9 @@ def callback(data):
   global forward
   global blob_position
   global backing_up 
+  global found_goal
 
-  if backing_up:
+  if backing_up or found_goal == True:
     return
 
   # if a blob is found...
@@ -76,24 +63,38 @@ def callback(data):
       blob_position += blob.x
     blob_position /= len(data.blobs)
 
-    # log message
-    rospy.loginfo('FOUND %d BLOB(S) at position %.2f' % (len(data.blobs), blob_position))
+    if found_goal == False:
+        # log message
+        rospy.loginfo('FOUND %d BLOB(S) at position %.2f' % (len(data.blobs), blob_position))
 
-    # turn anti-clockwise
-    if blob_position > 450:
-      turn = -0.5
-      rospy.loginfo('Move to left!')
-      forward = 0
+        os.system("say 'Whats up dude!'")
+        os.system("say 'Take my candy!'")
+        
+        '''
+        nope = Twist()
+        nope.linear.x = 0
+        nope.angular.z = radians(0); #45 deg/s in radians/s
+        
+        for x in range(0,30):
+            self.cmd_vel.publish(nope)
+        '''
+    
+    found_goal = True
+    # # turn anti-clockwise
+    # if blob_position > 450:
+    #   turn = -0.5
+    #   rospy.loginfo('Move to left!')
+    #   forward = 0
 
-    # turn clockwise
-    if blob_position < 200:
-      turn = 0.1
-      forward = 0
+    # # turn clockwise
+    # if blob_position < 200:
+    #   turn = 0.1
+    #   forward = 0
 
-    # perfect, move forward!
-    if blob_position > 200 and blob_position < 450:
-      turn = 0
-      forward = 0.1
+    # # perfect, move forward!
+    # if blob_position > 200 and blob_position < 450:
+    #   turn = 0
+    #   forward = 0.1
 
   # no blob found...
   else:
@@ -110,6 +111,7 @@ def pcl_callback(data):
   global max_y
   global max_z
   global backing_up 
+  global going_straight
 
   # init values
   x = y = z = n  = 0
@@ -128,7 +130,7 @@ def pcl_callback(data):
       n += 1
     
   # calculate centroid
-  if n > 4000:
+  if (going_straight == False and n > 4000):
     x /= n
     y /= n
     z /= n
@@ -136,48 +138,119 @@ def pcl_callback(data):
     rospy.loginfo('Centroid (n = %d) at (%.2f, %.2f, %.2f)' % (n, x, y, z))
 
     # too close!! avoid obstacle fast!!
-    if z < 0.6 or backing_up:
+    if z < 0.8 or backing_up:
       backing_up = True
+      print ("door detected")
       handle_obstacle()    
   
   # not enough points detected
   else:
     rospy.loginfo('Not enough points detected: %d' % n)
 
-# subscribe
-def run():
-  global blob_position
-  global turn
-  global forward
 
-  # publish twist messages to /cmd_vel
-  pub = rospy.Publisher('/mobile_base/commands/velocity', Twist)
+class DrawASquare():
+    def __init__(self):
+        global blob_position
+        global turn
+        global forward
+        global going_straight
+        global found_goal
 
-  # subscribe to topics
-  rospy.Subscriber('/blobs', Blobs, callback)
-  rospy.Subscriber('/camera/depth/points', PointCloud2, pcl_callback)
+        # initiliaze
+        rospy.init_node('drawasquare', anonymous=False)
 
-  rospy.init_node("color_tracker")
-  rospy.wait_for_message('/camera/depth/points', PointCloud2)
+        # What to do you ctrl + c    
+        rospy.on_shutdown(self.shutdown)
+        
+        self.cmd_vel = rospy.Publisher('cmd_vel_mux/input/navi', Twist, queue_size=10)
 
-  # create twist instance
-  twist = Twist()
+        rospy.Subscriber('/blobs', Blobs, callback)
+        rospy.Subscriber('/camera/depth/points', PointCloud2, pcl_callback)
 
-  # run this while kobuki is on...
-  while not rospy.is_shutdown():
+        # rospy.init_node("color_tracker")
+        rospy.wait_for_message('/camera/depth/points', PointCloud2)
+     
+	# 5 HZ
+        r = rospy.Rate(5);
 
-    # use turn to turn the robot slower/faster
-    twist.linear.x = forward; twist.linear.y = forward; twist.linear.z = forward
-    twist.angular.x = 0; twist.angular.y = 0; twist.angular.z = turn
+	# create two different Twist() variables.  One for moving forward.  One for turning 45 degrees.
 
-    # publish turn
-    pub.publish(twist)
-    blob_position = 0
-    rospy.sleep(0.1)
+        # let's go forward at 0.2 m/s
+        move_cmd = Twist()
+        move_cmd.linear.x = 0.2
+	# by default angular.z is 0 so setting this isn't required
 
-# main function
+        #let's turn at 45 deg/s
+        turn_cmd = Twist()
+        turn_cmd.linear.x = 0
+        turn_cmd.angular.z = radians(60); #45 deg/s in radians/s
+        
+        #let's turn at 45 deg/s
+        neg_turn_cmd = Twist()
+        neg_turn_cmd.linear.x = 0
+        neg_turn_cmd.angular.z = radians(64); #45 deg/s in radians/s
+        
+        #let's turn at 45 deg/s
+        twice_turn_cmd = Twist()
+        twice_turn_cmd.linear.x = 0
+        twice_turn_cmd.angular.z = radians(-120); #45 deg/s in radians/s
+
+	#two keep drawing squares.  Go forward for 2 seconds (10 x 5 HZ) then turn for 2 second
+	#two keep drawing squares.  Go forward for 2 seconds (10 x 5 HZ) then turn for 2 secon
+        count = 0
+        
+        while not rospy.is_shutdown():
+
+            # found goal, don't move
+            if found_goal == True:
+                for x in range(0,20):
+                    self.cmd_vel.publish(Twist())
+                    r.sleep()
+                found_goal = False
+
+        
+	    # go forward 0.4 m (2 seconds * 0.2 m / seconds)
+            rospy.loginfo("Going Straight")
+            going_straight = True
+            for x in range(0,20):
+                self.cmd_vel.publish(move_cmd)
+                r.sleep()
+	        
+            if(count % 3 == 0):
+                os.system("say 'Where are you human?'")
+
+        # turn 90 degrees
+	        rospy.loginfo("Turning left")
+            going_straight = False
+            for x in range(0,10):
+                self.cmd_vel.publish(turn_cmd)
+                r.sleep()            	    
+
+        # turn 180 degrees
+	        rospy.loginfo("Turning right")
+            going_straight = False
+            for x in range(0,10):
+                self.cmd_vel.publish(twice_turn_cmd)
+                r.sleep()            
+       
+        # turn -90 degrees
+	        rospy.loginfo("Turning forward")
+            going_straight = False
+            for x in range(0,10):
+                self.cmd_vel.publish(neg_turn_cmd)
+                r.sleep()     
+    
+            count = count+1
+            
+
+    def shutdown(self):
+        # stop turtlebot
+        rospy.loginfo("Stop Drawing Squares")
+        self.cmd_vel.publish(Twist())
+        rospy.sleep(1)
+ 
 if __name__ == '__main__':
-  try:
-    run()
-  except rospy.ROSInterruptException:
-    print('OMG')
+    DrawASquare()
+
+
+
