@@ -1,3 +1,23 @@
+# CSE 276B - HW 11
+# Authors: Neil Sengupta, Hadi Givehchian, Gustavo Umbelino
+# References:
+# # Python color-tracking: http://www.transistor.io/color-blob-tracking-with-ros.html
+# # ROS Perception: https://github.com/gertanoh/ROS-Perception
+
+# $ roscore
+# $ roslaunch turtlebot_bringup minimal.launch
+# $ roslaunch astra_launch astra_pro.launch
+
+# Calibrate color in ~/colors.txt
+# $ roscd cmvision
+# $ roslaunch cmvision cmvision.launch image:=/camera/rgb/image_raw
+# << CTRL+C to kill process >>
+# $ rosparam set /cmvision/color_file /home/turtlebot/colors.txt
+# $ rosrun cmvision cmvision image:=/camera/rgb/image_raw
+
+# $ cd ~/catkin_ws/src/where_is_blob/src
+# $ python color_tracker.py
+
 #!/usr/bin/env python
 import rospy
 from geometry_msgs.msg import Twist
@@ -67,34 +87,11 @@ def callback(data):
         # log message
         rospy.loginfo('FOUND %d BLOB(S) at position %.2f' % (len(data.blobs), blob_position))
 
+        # message to communicate to human
         os.system("say 'Whats up dude!'")
         os.system("say 'Take my candy!'")
-        
-        '''
-        nope = Twist()
-        nope.linear.x = 0
-        nope.angular.z = radians(0); #45 deg/s in radians/s
-        
-        for x in range(0,30):
-            self.cmd_vel.publish(nope)
-        '''
-    
+
     found_goal = True
-    # # turn anti-clockwise
-    # if blob_position > 450:
-    #   turn = -0.5
-    #   rospy.loginfo('Move to left!')
-    #   forward = 0
-
-    # # turn clockwise
-    # if blob_position < 200:
-    #   turn = 0.1
-    #   forward = 0
-
-    # # perfect, move forward!
-    # if blob_position > 200 and blob_position < 450:
-    #   turn = 0
-    #   forward = 0.1
 
   # no blob found...
   else:
@@ -174,11 +171,8 @@ class DrawASquare():
         r = rospy.Rate(5);
 
 	# create two different Twist() variables.  One for moving forward.  One for turning 45 degrees.
-
-        # let's go forward at 0.2 m/s
         move_cmd = Twist()
         move_cmd.linear.x = 0.2
-	# by default angular.z is 0 so setting this isn't required
 
         #let's turn at 45 deg/s
         turn_cmd = Twist()
@@ -195,10 +189,8 @@ class DrawASquare():
         twice_turn_cmd.linear.x = 0
         twice_turn_cmd.angular.z = radians(-120); #45 deg/s in radians/s
 
-	#two keep drawing squares.  Go forward for 2 seconds (10 x 5 HZ) then turn for 2 second
-	#two keep drawing squares.  Go forward for 2 seconds (10 x 5 HZ) then turn for 2 secon
         count = 0
-        
+
         while not rospy.is_shutdown():
 
             # found goal, don't move
