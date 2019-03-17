@@ -1,6 +1,4 @@
-
 #! /usr/bin/env python
-
 import rospy
 import actionlib
 import time
@@ -14,22 +12,23 @@ from geometry_msgs.msg import Point
 class map_navigation_gus():
 
 	def choose(self):
-
 		choice='q'
 
 		rospy.loginfo("|'0': Lab ")
 		rospy.loginfo("|'1': Dean ")
 		rospy.loginfo("|'2': Arun Kumar Office ")
 		rospy.loginfo("|'3': Nadir Weibel ")
-                rospy.loginfo("|'4': Sofa ")
-                rospy.loginfo("|'5': Kitchen ")
-                rospy.loginfo("|'q': Quit ")
+		rospy.loginfo("|'4': Sofa ")
+		rospy.loginfo("|'5': Kitchen ")
+		rospy.loginfo("|'q': Quit ")
 		rospy.loginfo("|WHERE TO GO?")
 		choice = input()
+
 		return choice
- Speaking(self, schoice):
+    
+    def Speaking(self, schoice):
 		if (schoice == -1):
-			var = 'Hello!My name is Kobuki and I will take you in a fabulous adventure. Follow me.'
+			var = 'Hello! My name is Kobuki and I will take you in a fabulous adventure. Follow me.'
 		elif (schoice == 0):
 			var = 'Welcome to the Embedded Systems lab. Please go inside.'
 		elif (schoice == 1):
@@ -40,14 +39,30 @@ class map_navigation_gus():
 			var = 'Finally, welcome to the kitchen. Are you hungry?'
 		elif (schoice == 6):
 			var = 'Ok, time to go. Follow me!'
-                elif (schoice == 2):
-                        var = 'Here is Arun Kumar office'
-                elif (schoice == 3):
-                        var = 'Here is Nadir Weibel office'
+        elif (schoice == 2):
+            var = 'Here is Arun Kumar office'
+        elif (schoice == 3):
+            var = 'Here is Nadir Weibel office'
+		
 		os.system("say " +  var)
 
-	def __init__(self):
+	def displayPage(self, choice):
+		if (schoice == -1):
+			link = 'https://neilsgp.github.io/alfred/index.html'
+		elif (schoice == 0):
+			link = 'https://neilsgp.github.io/alfred/index.html'
+		elif (schoice == 1):
+			link = 'https://scholar.google.com/citations?user=BEEuinQAAAAJ&hl=en'
+		elif (schoice == 2):
+			link = 'https://neilsgp.github.io/alfred/rest.html'
+		elif (schoice == 3):
+			link = 'Finally, welcome to the kitchen. Are you hungry?'
+		elif (schoice == 4):
+			link = 'https://www.youtube.com/watch?v=p_iPD1Iv33w'
 
+		webbrowser.open(link, new=2)
+
+	def __init__(self):
 		# declare the coordinates of interest
 		self.xLab =  -8.08
 		self.yLab = -0.601
@@ -57,10 +72,10 @@ class map_navigation_gus():
 		self.ySofa = 7.43
 		self.xKitchen = -15.7
 		self.yKitchen = 7.75
-                self.xArun = -11.5
-                self.yArun = -2.22
-                self.xNadir = -19.5
-                self.yNadir = 0.56
+        self.xArun = -11.5
+        self.yArun = -2.22
+        self.xNadir = -19.5
+        self.yNadir = 0.56
 		self.goalReached = False
 
 		# initiliaze
@@ -69,50 +84,41 @@ class map_navigation_gus():
 		# # start tour
 		self.Speaking(-1)
 
-		# # office
-		# self.goalReached = self.moveToGoal(self.xOffice1, self.yOffice1)
-		# self.Speaking(1)
-		# time.sleep(5)
-		# self.Speaking(4)
+        for choice in range(6):
+            if (choice == 0):
+                self.goalReached = self.moveToGoal(self.xLab, self.yLab)
+                self.Speaking(choice)
+                self.displayPage(choice)
 
-		# # sofa
-		# self.goalReached = self.moveToGoal(self.xOffice2, self.yOffice2)
-		# self.Speaking(2)
-		# time.sleep(5)
-		# self.Speaking(4)
+            elif (choice == 1):
+                self.goalReached = self.moveToGoal(self.xDean, self.yDean)
+                self.Speaking(choice)
+                self.displayPage(choice)
 
-		# # kitchen
-		# self.goalReached = self.moveToGoal(self.xOffice3, self.yOffice3)
-		# self.Speaking(3)
-		# time.sleep(5)
-		# self.Speaking(4)
+            elif (choice == 2):
+                self.goalReached = self.moveToGoal(self.xArun, self.yArun)
+                self.Speaking(choice)
+                self.displayPage(choice)
 
-		# # lab
-		# self.goalReached = self.moveToGoal(self.xCafe, self.yCafe)
-		# self.Speaking(0)
-		# time.sleep(5)
-                #choice = None
-                for choice in range(6):
-                    if (choice == 0):
-                        self.goalReached = self.moveToGoal(self.xLab, self.yLab)
-                        self.Speaking(choice)
-                    elif (choice == 1):
-                        self.goalReached = self.moveToGoal(self.xDean, self.yDean)
-                        self.Speaking(choice)
-                    elif (choice == 2):
-                        self.goalReached = self.moveToGoal(self.xArun, self.yArun)
-                        self.Speaking(choice)
-                    elif (choice == 3):
-                        self.goalReached = self.moveToGoal(self.xNadir, self.yNadir)
-                        self.Speaking(choice)
-                    elif (choice == 4):
-                        self.goalReached = self.moveToGoal(self.xSofa, self.ySofa)
-                        self.Speaking(choice)
-                    elif (choice == 5):
-                        self.goalReached = self.moveToGoal(self.xKitchen, self.yKitchen)
-                        self.Speaking(choice)
-                os.system("say 'Where do you want to go now?'")
+            elif (choice == 3):
+                self.goalReached = self.moveToGoal(self.xNadir, self.yNadir)
+                self.Speaking(choice)
+                self.displayPage(choice)
+
+            elif (choice == 4):
+                self.goalReached = self.moveToGoal(self.xSofa, self.ySofa)
+                self.Speaking(choice)
+                self.displayPage(choice)
+
+            elif (choice == 5):
+                self.goalReached = self.moveToGoal(self.xKitchen, self.yKitchen)
+                self.Speaking(choice)
+                self.displayPage(choice)
+                
+            os.system("say 'Where do you want to go now?'")
+		
 		choice = None
+
 		while choice != 'q':
 
 			choice = self.choose()
@@ -132,12 +138,14 @@ class map_navigation_gus():
 			elif (choice == 5):
 				self.goalReached = self.moveToGoal(self.xKitchen, self.yKitchen)
 				self.Speaking(choice)
-                        elif (choice == 2):
-                                self.goalReached = self.moveToGoal(self.xArun, self.yArun)
-                                self.Speaking(choice)
-                        elif (choice == 3):
-                                self.goalReached = self.moveToGoal(self.xNadir, self.yNadir)
-                                self.Speaking(choice)
+
+            elif (choice == 2):
+                    self.goalReached = self.moveToGoal(self.xArun, self.yArun)
+                    self.Speaking(choice)
+            elif (choice == 3):
+                    self.goalReached = self.moveToGoal(self.xNadir, self.yNadir)
+                    self.Speaking(choice)
+			
 			if (choice != 'q'):
 
 				if (self.goalReached):
@@ -145,7 +153,6 @@ class map_navigation_gus():
 
 				else:
 					rospy.loginfo("Hard Luck!")
-
 
 	def shutdown(self):
 		# stop turtlebot
