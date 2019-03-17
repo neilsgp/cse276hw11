@@ -10,6 +10,32 @@ from actionlib_msgs.msg import *
 from geometry_msgs.msg import Point
 
 class map_navigation_gus():
+    def callback(data):
+        def callback(data):
+            global bumps
+
+            if data.bumper == 1:
+                bumps = not bumps
+                print "bump"
+
+        print "bumper game"
+        pub = rospy.Publisher('/mobile_base/commands/velocity', Twist, queue_size=10)
+        bumper = rospy.Subscriber('/mobile_base/events/bumper', BumperEvent, callback)
+        
+        r = rospy.Rate(1) 
+        t_end = time.time() + 60 * 0.5
+
+        count = 0
+        while time.time() < t_end:
+            global bumps
+            if bumps:
+                print "bumper hit"
+                count = count + 1
+                bumps = not bumps
+            r.sleep()
+
+        print "you hit the bumper" + count + " times."
+        print "exiting game"
 
     def choose(self):
         choice='q'
@@ -46,7 +72,7 @@ class map_navigation_gus():
         
         os.system("say " +  var)
 
-    def displayPage(self, choice):
+    def displayPage(self, schoice):
         if (schoice == -1):
             link = 'https://neilsgp.github.io/alfred/index.html'
         elif (schoice == 0):
@@ -120,7 +146,6 @@ class map_navigation_gus():
         choice = None
 
         while choice != 'q':
-
             choice = self.choose()
 
             if (choice == 0):
