@@ -5,6 +5,8 @@
 # References:
 # # Python color-tracking: http://www.transistor.io/color-blob-tracking-with-ros.html
 # # ROS Perception: https://github.com/gertanoh/ROS-Perception
+# # http://wiki.ros.org/gmapping
+# # https://github.com/aniskoubaa/gaitech_edu
 
 import rospy
 import actionlib
@@ -33,8 +35,8 @@ from kobuki_msgs.msg import BumperEvent
 # $ rosparam set /cmvision/color_file /home/turtlebot/colors.txt
 # $ rosrun cmvision cmvision image:=/camera/rgb/image_raw
 
-# $ cd ~/catkin_ws/src/gaitech_edu/src/turtlebot/navigation/map_navigation/scripts
-# $ python map_navigation_gus.py
+# $ cd to the code directory
+# $ python alfred.py
 
 # Calibrate color in ~/colors.txt
 
@@ -42,7 +44,8 @@ from kobuki_msgs.msg import BumperEvent
 # 1. Automatically runs a tour of 3rd or 4th floors of CSE @ UCSD
 # 2. Asks for user (keyboard) input for extra tour locations
 # 3. Detects colors that represents human emotions
-class map_navigation_gus():
+# 4. Bumper Game
+class alfred():
 
 	# Menu: presents users options and collects user input
 	def choose(self):
@@ -87,7 +90,7 @@ class map_navigation_gus():
 	# Given a user choice, uses the 'say' command to interact with the user
 	def Speaking(self, schoice):
 		if (schoice == -1):
-			var = 'Hello! My name is Kobuki and I will take you in a fabulous adventure. Follow me.'
+			var = 'Hello! My name is Alfred Kobuki and I will take you in a fabulous adventure. Follow me.'
 		elif (schoice == 0):
 			var = 'Welcome to the Embedded Systems lab. Please go inside.'
 		elif (schoice == 1):
@@ -237,27 +240,32 @@ class map_navigation_gus():
 				self.displayPage(4)
 				self.Speaking(4)
 				break
-				
+			# Visiting the lab	
 			if (choice == 0):
 				self.goalReached = self.moveToGoal(self.xLab, self.yLab)
 				self.displayPage(choice)
 				self.Speaking(choice)
+			# Visiting Dean's office
 			elif (choice == 1):
 				self.goalReached = self.moveToGoal(self.xDean, self.yDean)
 				self.displayPage(choice)
 				self.Speaking(choice)
+			# Visiting Arun's office
 			elif (choice == 2):
 				self.goalReached = self.moveToGoal(self.xArun, self.yArun)
 				self.displayPage(choice)
 				self.Speaking(choice)
+			# Visiting Nadir's office
 			elif (choice == 3):
 				self.goalReached = self.moveToGoal(self.xNadir, self.yNadir)
 				self.displayPage(choice)
 				self.Speaking(choice)
+			# Going to the Sofa
 			elif (choice == 4):
 				self.goalReached = self.moveToGoal(self.xSofa, self.ySofa)
 				self.displayPage(choice)
 				self.Speaking(choice)
+			# Visiting the Kitchenette
 			elif (choice == 5):
 				self.goalReached = self.moveToGoal(self.xKitchen, self.yKitchen)
 				self.displayPage(choice)
@@ -354,8 +362,8 @@ class map_navigation_gus():
 if __name__ == '__main__':
     # try:
 		rospy.loginfo("You have reached the destination")
-		map_navigation_gus()
+		alfred()
 		rospy.spin()
 
     # except:
-    #   rospy.loginfo("map_navigation_gus node terminated.")
+    #   rospy.loginfo("alfred node terminated.")
