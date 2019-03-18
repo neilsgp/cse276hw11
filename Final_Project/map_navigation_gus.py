@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-# CSE 276B - Final Presentation
+# CSE 276B - Final Project
 # Authors: Neil Sengupta, Hadi Givehchian, Gustavo Umbelino
 # References:
 # # Python color-tracking: http://www.transistor.io/color-blob-tracking-with-ros.html
@@ -38,8 +38,13 @@ from kobuki_msgs.msg import BumperEvent
 
 # Calibrate color in ~/colors.txt
 
+# Main navigation class
+# 1. Automatically runs a tour of 3rd or 4th floors of CSE @ UCSD
+# 2. Asks for user (keyboard) input for extra tour locations
+# 3. Detects colors that represents human emotions
 class map_navigation_gus():
 
+	# Menu: presents users options and collects user input
 	def choose(self):
 
 		choice='q'
@@ -55,6 +60,7 @@ class map_navigation_gus():
 		choice = input()
 		return choice
 
+	# Displays given a user choice, displays an html page in the default browser
 	def displayPage(self, schoice):
 		if (schoice == -1):
 			link = 'https://neilsgp.github.io/alfred/index.html'
@@ -74,9 +80,11 @@ class map_navigation_gus():
 			link = 'https://www.youtube.com/watch?v=05L0hOw2yVs&t=2s'
 		else:
 			link = 'https://neilsgp.github.io/alfred/index.html'
-
+		
+		# Open web browser
 		webbrowser.open(link, new=2)
 
+	# Given a user choice, uses the 'say' command to interact with the user
 	def Speaking(self, schoice):
 		if (schoice == -1):
 			var = 'Hello! My name is Kobuki and I will take you in a fabulous adventure. Follow me.'
@@ -94,27 +102,47 @@ class map_navigation_gus():
 			var = 'Finally, welcome to the kitchen. Are you hungry?'
 		elif (schoice == 6):
 			var = 'Ok, time to go. Follow me!'
-
+		
+		# Speak out loud
 		os.system("say " +  var)
+		
+		# If this is the first stop, robot can be a little faster
+		# Set stopped state
 		if schoice == -1:
 			self.stopped = True
 			time.sleep(5)
 			self.stopped = False
+			
+		# Rest of the tour, stops for longer
 		else:
 			self.stopped = True
 			time.sleep(10)
 			self.stopped = False
 
+	# Handles bored human
 	def humanGotBored(self):
 		self.bored = True
 		print('HUMAN GOT BORED!!!!')
 		os.system("say 'You seem bored, back up 10 feet and lets play a game!'")
+		
+	# Handles tired human
+	def humanGotTired(self):
+		self.tired = True
+		print('HUMAN GOT TIRED!!!!')
+		os.system("say 'You seem tired. I guess it is time to wrap up!'")
+		
+	# Handles over human
+	def humanIsDone(self):
+		self.end = True
+		print('HUMAN IS DONE!!!!')
+		os.system("say 'Ok, enough. Time to stop!'")
 
 	# called on bumber hit
 	def bumper_callback(self, data):
 		if not self.bored:
 			return
 
+		# Say random sentence based on bumper hits
 		if data.bumper == 1:
 			rand = random.randint(0, 2)
 			if rand == 0:
@@ -126,27 +154,44 @@ class map_navigation_gus():
 			else:
 				os.system("say 'I dont know what to say!'")
 
+	# Called when blobs matching ~/colors.txt are found
 	def blobs_callback(self, data):
 
-		# if a blob is found...
+		# if 10 or more blobs are found...
 		if self.stopped and len(data.blobs) > 10:
 			for blob in data.blobs:
+				
+				# if large pink blob is found...
 				if blob.name == 'Pink' and blob.area > 38000:
 					print('Found %s (%d)' % (blob.name, blob.area))
 					if not self.bored:
 						self.humanGotBored()
+				
+				# if large orange blob is found...
+				if blob.name == 'Orange' and blob.area > 38000:
+					print('Found %s (%d)' % (blob.name, blob.area))
+					if not self.tired:
+						self.humanGotTired()
+				
+				# if large green blob is found...
+				if blob.name == 'Green' and blob.area > 38000:
+					print('Found %s (%d)' % (blob.name, blob.area))
+					if not self.end:
+						self.humanIsDone()
 
 	def playGame(self):
 		os.system("say 'Ok, go, kick me!'")
 		time.sleep(10)
 		# self.bored = False
 
+	# First called when this class is instantiated
 	def __init__(self):
 
 		# set global vars
 		self.stopped = True
 		self.tired = False
 		self.bored = False
+		self.end = False
 
 		# declare the coordinates of interest
 		self.xLab =  -8.38
@@ -175,9 +220,24 @@ class map_navigation_gus():
 		# # start automatic tour
 		self.Speaking(-1)
 		for choice in range(1, 6):
+			
+			# bored? play game
 			if self.bored:
 				self.playGame()
 				break
+				
+			# done? end tour and shutdown
+			if self.end:
+				self.shutdown()
+				return
+			
+			# tired? go to sofa
+			if self.tired:
+				self.goalReached = self.moveToGoal(self.xSofa, self.ySofa)
+				self.displayPage(4)
+				self.Speaking(4)
+				break
+				
 			if (choice == 0):
 				self.goalReached = self.moveToGoal(self.xLab, self.yLab)
 				self.displayPage(choice)
@@ -203,6 +263,8 @@ class map_navigation_gus():
 				self.displayPage(choice)
 				self.Speaking(choice)
 
+		# begin manual tour
+		# ask user for input and take them there
 		os.system("say 'Where do you want to go now?'")
 		choice = None
 		while choice != 'q':
@@ -242,11 +304,13 @@ class map_navigation_gus():
 					rospy.loginfo("Hard Luck!")
 
 
+	# shuts down robot
 	def shutdown(self):
 		# stop turtlebot
-		rospy.loginfo("Quit program")
+		rospy.loginfo("Goodbye")
 		rospy.sleep()
 
+	# uses map to more to a point
 	def moveToGoal(self, xGoal, yGoal):
 
 		#define a client for to send goal requests to the move_base server through a SimpleActionClient
@@ -256,7 +320,7 @@ class map_navigation_gus():
 		while(not ac.wait_for_server(rospy.Duration.from_sec(5.0))):
 			rospy.loginfo("Waiting for the move_base action server to come up")
 
-
+		# gets goal
 		goal = MoveBaseGoal()
 
 		#set up the frame parameters
@@ -273,16 +337,20 @@ class map_navigation_gus():
 		rospy.loginfo("Sending goal location ...")
 		ac.send_goal(goal)
 
+		# wait for result
 		ac.wait_for_result(rospy.Duration(60))
 
+		# success!
 		if(ac.get_state() ==  GoalStatus.SUCCEEDED):
 			rospy.loginfo("You have reached the destination")
 			return True
 
+		# failed :/
 		else:
 			rospy.loginfo("The robot failed to reach the destination")
 			return False
 
+# main function, called with $ python {filename}
 if __name__ == '__main__':
     # try:
 		rospy.loginfo("You have reached the destination")
